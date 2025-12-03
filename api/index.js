@@ -134,6 +134,18 @@ app.get('/api/movies', async (req, res) => {
   }
 });
 
+// GET /api/showtimes - Obtener funciones (temporalmente vacío)
+app.get('/api/showtimes', async (req, res) => {
+  try {
+    // Por ahora devuelve array vacío
+    // TODO: Implementar tabla showtimes y rooms
+    res.json([]);
+  } catch (err) {
+    console.error('Error en /api/showtimes:', err);
+    res.status(500).json({ error: 'Error al obtener funciones' });
+  }
+});
+
 // LOGIN - busca usuario por email y valida contraseña
 app.post('/api/login', async (req, res) => {
   try {

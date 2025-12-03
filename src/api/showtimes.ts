@@ -1,7 +1,6 @@
 // src/api/showtimes.ts
 import { Showtime } from "@/types";
-
-const API_BASE = ""; // mismo que en movies.ts, relativo al dominio
+import { API_NODE } from "@/config";
 
 type ShowtimeApiRow = {
   id: number | string;
@@ -16,7 +15,7 @@ type ShowtimeApiRow = {
 
 // 🔹 Todas las funciones de UNA película (pantalla Showtimes)
 export async function fetchShowtimesByMovie(movieId: number): Promise<Showtime[]> {
-  const res = await fetch(`${API_BASE}/showtimes.php?movie_id=${movieId}`);
+  const res = await fetch(`${API_NODE}/api/showtimes?movie_id=${movieId}`);
 
   if (!res.ok) {
     console.error("Error HTTP fetchShowtimesByMovie:", res.status);
@@ -37,7 +36,7 @@ export async function fetchShowtimesByMovie(movieId: number): Promise<Showtime[]
 
 // 🔹 Detalle de UNA función por su id (para SeatMap)
 export async function fetchShowtimeById(id: number): Promise<Showtime | null> {
-  const res = await fetch(`${API_BASE}/showtimes.php?id=${id}`);
+  const res = await fetch(`${API_NODE}/api/showtimes?id=${id}`);
 
   if (!res.ok) {
     console.error("Error HTTP fetchShowtimeById:", res.status);
