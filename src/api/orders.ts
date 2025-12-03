@@ -1,8 +1,6 @@
 // src/api/orders.ts
 import type { CartItem } from "@/types";
-
-// Este BASE lo usas igual que en movies.ts y showtimes.ts (rutas relativas)
-const API_BASE = "";
+import { API_NODE } from "@/config";
 
 // =============================
 // Tipos para carrito / órdenes
@@ -50,7 +48,7 @@ export async function createOrder(params: {
   customerEmail: string;
   items: OrderItemPayload[];
 }): Promise<{ ok: boolean; order_id: number }> {
-  const res = await fetch(`${API_BASE}/create_order.php`, {
+  const res = await fetch(`${API_NODE}/api/orders`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -71,7 +69,7 @@ export async function createOrder(params: {
 
 export async function fetchOrdersByEmail(email: string) {
   const res = await fetch(
-    `${API_BASE}/get_orders.php?email=${encodeURIComponent(email)}`
+    `${API_NODE}/api/orders?email=${encodeURIComponent(email)}`
   );
   if (!res.ok) throw new Error("Error al obtener órdenes");
   return res.json();
@@ -79,18 +77,15 @@ export async function fetchOrdersByEmail(email: string) {
 
 export async function fetchTicketsByEmail(email: string) {
   const res = await fetch(
-    `${API_BASE}/get_tickets.php?email=${encodeURIComponent(email)}`
+    `${API_NODE}/api/orders?email=${encodeURIComponent(email)}`
   );
   if (!res.ok) throw new Error("Error al obtener tickets");
   return res.json();
 }
 
 // =============================
-// NUEVO: GUARDAR VENTA PARA EL QR
+// GUARDAR VENTA PARA EL QR
 // =============================
-
-// API de InfinityFree para guardar las ventas del QR
-const SALES_API_BASE = "https://starlightcine.page.gd";
 
 export interface RemoteSalePayload {
   folio: string;
@@ -101,35 +96,7 @@ export interface RemoteSalePayload {
 }
 
 export const createRemoteSale = async (payload: RemoteSalePayload) => {
-  try {
-    const res = await fetch(`${SALES_API_BASE}/create_sale.php`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        folio: payload.folio,
-        subtotal: payload.subtotal,
-        tax: payload.tax,
-        total: payload.total,
-        items: payload.items,
-      }),
-    });
-
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok) {
-      console.error("HTTP error create_sale.php", res.status, data);
-      throw new Error((data as any)?.error || "Error en create_sale.php");
-    }
-
-    if (data && (data as any).error) {
-      console.error("API error create_sale.php", data);
-      throw new Error((data as any).error);
-    }
-
-    console.log("create_sale.php OK:", data);
-    return data;
-  } catch (error) {
-    console.error("Error llamando a create_sale.php", error);
-    throw error;
-  }
+  // Por ahora guardamos la venta localmente (ya se guarda en orders)
+  console.log("Venta creada:", payload);
+  return { ok: true, folio: payload.folio };
 };

@@ -1,7 +1,6 @@
 // src/api/seats.ts
 import { Seat } from "@/types";
-
-const API_BASE = ""
+import { API_NODE } from "@/config";
 
 type SeatApiRow = {
   id: number | string;
@@ -12,7 +11,7 @@ type SeatApiRow = {
 };
 
 export async function fetchSeats(showtimeId: number): Promise<Seat[]> {
-  const res = await fetch(`${API_BASE}/seats.php?showtime_id=${showtimeId}`);
+  const res = await fetch(`${API_NODE}/api/seats?showtime_id=${showtimeId}`);
 
   if (!res.ok) {
     console.error("Error HTTP fetchSeats:", res.status);
@@ -45,7 +44,7 @@ export async function reserveSeats(
     return { row, number: num };
   });
 
-  const res = await fetch(`${API_BASE}/seats.php`, {
+  const res = await fetch(`${API_NODE}/api/seats`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

@@ -1,9 +1,8 @@
 // src/api/products.ts
 import { Product, Category } from "@/types";
+import { API_NODE } from "@/config";
 
-const API_BASE = "https://starlightcine.page.gd";
-
-// Lo que viene crudo del PHP
+// Lo que viene crudo de la API
 type RawProduct = {
   id: number | string;
   sku: string;
@@ -13,12 +12,12 @@ type RawProduct = {
   stock: number | string;
   category_id: number | string;
   image_url?: string | null;
-  image?: string | null; // por si el PHP usa este campo como en movies
+  image?: string | null;
 };
 
 // 🔹 Obtener productos
 export async function fetchProducts(): Promise<Product[]> {
-  const res = await fetch(`${API_BASE}/products.php`);
+  const res = await fetch(`${API_NODE}/api/products`);
   if (!res.ok) {
     console.error("HTTP error fetchProducts:", res.status, await res.text());
     throw new Error("Error al obtener productos");
@@ -40,7 +39,7 @@ export async function fetchProducts(): Promise<Product[]> {
 
 // 🔹 Obtener categorías
 export async function fetchCategories(): Promise<Category[]> {
-  const res = await fetch(`${API_BASE}/categories.php`);
+  const res = await fetch(`${API_NODE}/api/categories`);
   if (!res.ok) {
     console.error(
       "HTTP error fetchCategories:",
@@ -54,7 +53,7 @@ export async function fetchCategories(): Promise<Category[]> {
 
 // 🔹 Crear producto
 export async function createProduct(prod: Product): Promise<Product> {
-  const res = await fetch(`${API_BASE}/products.php`, {
+  const res = await fetch(`${API_NODE}/api/products`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -87,10 +86,10 @@ export async function createProduct(prod: Product): Promise<Product> {
   };
 }
 
-// 🔹 Actualizar producto (ahora con POST + ?id=)
+// 🔹 Actualizar producto
 export async function updateProduct(prod: Product): Promise<void> {
-  const res = await fetch(`${API_BASE}/products.php?id=${prod.id}`, {
-    method: "POST", // antes era PUT
+  const res = await fetch(`${API_NODE}/api/products/${prod.id}`, {
+    method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       sku: prod.sku,
@@ -98,7 +97,7 @@ export async function updateProduct(prod: Product): Promise<void> {
       price: prod.price,
       stock: prod.stock,
       category_id: prod.categoryId,
-      image: prod.image ?? "",
+      image_url: prod.image ?? "",
     }),
   });
 
@@ -113,7 +112,7 @@ export async function updateProduct(prod: Product): Promise<void> {
 
 // 🔹 Eliminar producto
 export async function deleteProduct(id: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/products.php?id=${id}`, {
+  const res = await fetch(`${API_NODE}/api/products/${id}`, {
     method: "DELETE",
   });
 
@@ -123,26 +122,10 @@ export async function deleteProduct(id: number): Promise<void> {
   }
 }
 
-// 🔹 Subir imagen al servidor PHP
+// 🔹 Subir imagen (placeholder - se puede implementar después)
 export async function uploadProductImage(file: File): Promise<string> {
-  const formData = new FormData();
-  formData.append("image", file);
-
-  const res = await fetch(`${API_BASE}/upload_product_image.php`, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!res.ok) {
-    console.error(
-      "HTTP error uploadProductImage:",
-      res.status,
-      await res.text()
-    );
-    throw new Error("Error al subir la imagen");
-  }
-
-  const data = await res.json();
-  // PHP debe devolver { "url": "https://starlightcine.page.gd/uploads/products/archivo.jpg" }
-  return data.url as string;
+  // Por ahora retornamos una URL placeholder
+  // TODO: Implementar subida de imágenes si es necesario
+  console.log("Upload de imagen no implementado aún, usando placeholder");
+  return `/dulceria/${file.name}`;
 }
