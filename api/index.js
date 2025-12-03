@@ -2,7 +2,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -17,15 +17,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Conexión a MySQL usando variables de entorno
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+// Conexión a PostgreSQL usando variables de entorno
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 app.get('/', (req, res) => {
@@ -41,26 +36,26 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ message: 'Email y contraseña son requeridos.' });
     }
 
-    // Buscar usuario solo por email
-    const [rows] = await pool.query(
-      'SELECT * FROM users WHERE email = ?',
+    // Buscar usuario solo por email (PostgreSQL usa $1, $2 en lugar de ?)
+    const result = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
       [email]
     );
 
-    if (rows.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(401).json({ message: 'Credenciales incorrectas.' });
     }
 
-    const user = rows[0];
+    const user = result.rows[0];
 
     // Validar contraseña (en producción debería usar bcrypt)
-    if (user.password !== password) {
+    if (user.password_hash !== password) {
       return res.status(401).json({ message: 'Credenciales incorrectas.' });
     }
 
     // Mapear roles de la base de datos a los del frontend
     // Base de datos puede tener: 'administrador' o 'cliente'
-    // Frontend espera: 'admin' o 'customer'
+    // Frontend espera: 'admin' or 'customer'
     let roleForFrontend = 'customer';
     if (user.role === 'administrador' || user.role === 'admin') {
       roleForFrontend = 'admin';
