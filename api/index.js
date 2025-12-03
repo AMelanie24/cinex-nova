@@ -66,6 +66,15 @@ app.get('/api/init-db', async (req, res) => {
       );
     `);
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS rooms (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        capacity INT NOT NULL DEFAULT 100,
+        type VARCHAR(20) NOT NULL DEFAULT 'standard' CHECK (type IN ('standard', 'vip', 'imax'))
+      );
+    `);
+
     // Insertar usuarios
     await client.query(`
       INSERT INTO users (email, password_hash, role) VALUES
@@ -84,6 +93,17 @@ app.get('/api/init-db', async (req, res) => {
       ('Bebidas', 'Bebidas frías y calientes'),
       ('Palomitas', 'Palomitas de diferentes tamaños'),
       ('Dulces', 'Dulces y golosinas')
+      ON CONFLICT DO NOTHING;
+    `);
+
+    // Insertar salas
+    await client.query(`
+      INSERT INTO rooms (name, capacity, type) VALUES
+      ('Sala 1', 120, 'standard'),
+      ('Sala 2', 100, 'standard'),
+      ('Sala 3', 80, 'standard'),
+      ('Sala VIP', 50, 'vip'),
+      ('Sala IMAX', 200, 'imax')
       ON CONFLICT DO NOTHING;
     `);
 
@@ -143,6 +163,29 @@ app.get('/api/showtimes', async (req, res) => {
   } catch (err) {
     console.error('Error en /api/showtimes:', err);
     res.status(500).json({ error: 'Error al obtener funciones' });
+  }
+});
+
+// GET /api/rooms - Obtener salas
+app.get('/api/rooms', async (req, res) => {
+  try {
+    const { id } = req.query;
+
+    let query = 'SELECT id, name, capacity, type FROM rooms';
+    const params = [];
+
+    if (id) {
+      query += ' WHERE id = $1';
+      params.push(id);
+    }
+
+    query += ' ORDER BY id';
+
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error en /api/rooms:', err);
+    res.status(500).json({ error: 'Error al obtener salas' });
   }
 });
 
