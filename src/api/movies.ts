@@ -1,13 +1,10 @@
 // src/api/movies.ts
 import { Movie } from "@/types";
-
-// 👇 La API vive en el MISMO dominio que la app
-// Queda relativo, así: /movies.php, /upload_movie_image.php, etc.
-const API_BASE = "";
+import { API_NODE } from "@/config";
 
 // 🔹 Obtener TODAS las películas (cliente y admin usan esto)
 export async function fetchMovies(): Promise<Movie[]> {
-  const res = await fetch(`${API_BASE}/movies.php`);
+  const res = await fetch(`${API_NODE}/api/movies`);
 
   if (!res.ok) {
     console.error("Error HTTP fetchMovies:", res.status);

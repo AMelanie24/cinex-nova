@@ -116,6 +116,24 @@ app.get('/api/init-db', async (req, res) => {
   }
 });
 
+// GET /api/movies - Obtener todas las películas
+app.get('/api/movies', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, title, duration, rating, genre,
+             COALESCE(image, image_url, '') AS image,
+             description, format
+      FROM movies
+      ORDER BY id
+    `);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error en /api/movies:', err);
+    res.status(500).json({ error: 'Error al obtener películas' });
+  }
+});
+
 // LOGIN - busca usuario por email y valida contraseña
 app.post('/api/login', async (req, res) => {
   try {
